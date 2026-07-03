@@ -50,6 +50,11 @@ Sistema de gestão hoteleira desenvolvido em Java com interface gráfica (Swing)
 - `GeradorDeDados` — utilitário para gerar dados de teste/exemplo.
 - `TesteFuncional` — classe com testes funcionais do sistema.
 
+## Entregáveis
+
+j) Página de documentação produzida pelo Javadoc
+k) JAR da aplicação
+
 ## Observações
 
 - Ao rodar `TesteFuncional` ou `GeradorDeDados`, também é possível executá-los diretamente via `java -cp out <NomeDaClasse>` para testes ou geração de dados de exemplo, sem abrir a interface gráfica.
