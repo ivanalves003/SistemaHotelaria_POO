@@ -39,7 +39,7 @@ Sistema de gestão hoteleira desenvolvido em Java com interface gráfica (Swing)
 - `out/` — arquivos `.class` compilados.
 - `dados_hotel.dat` — arquivo de persistência de dados usado pelo `GerenciadorArquivo` para salvar/carregar o estado do sistema entre execuções.
 
-## Classes principais
+## Classes principais do sistema
 
 - `TelaSistema` — ponto de entrada da aplicação (contém o `main`) e interface gráfica.
 - `DadosHotel` — armazena os dados do sistema (clientes, quartos, reservas, etc.).
