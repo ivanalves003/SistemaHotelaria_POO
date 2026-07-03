@@ -18,10 +18,23 @@ public class GerenciadorArquivo {
         }
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(arquivo))) {
-            return (DadosHotel) ois.readObject();
+            DadosHotel dados = (DadosHotel) ois.readObject();
+            sincronizarContadorId(dados);
+            return dados;
         } catch (Exception e) {
             System.out.println("Aviso: Falha ao ler arquivo. Iniciando sistema vazio.");
             return new DadosHotel();
         }
+    }
+
+    private void sincronizarContadorId(DadosHotel dados) {
+        int maiorId = 0;
+        for (Cliente c : dados.clientes) {
+            maiorId = Math.max(maiorId, c.getId());
+            for (Dependente d : c.getDependentes()) {
+                maiorId = Math.max(maiorId, d.getId());
+            }
+        }
+        Pessoa.ajustarContador(maiorId + 1);
     }
 }

@@ -80,7 +80,7 @@ public class TelaSistema {
     private void abrirMenu() {
         int opcao = -1;
         while (opcao != 0) {
-            String menu = "=== PAINEL OPERACIONAL ===\n"
+            String menu = "    PAINEL OPERACIONAL    \n"
                     + "1. Cadastrar Cliente Titular\n"
                     + "2. Adicionar Dependente\n"
                     + "3. Alterar E-mail do Cliente\n"

@@ -19,4 +19,10 @@ public abstract class Pessoa implements Serializable {
     public int getId() { return id; }
     public String getNome() { return nome; }
     public String getDocumento() { return documento; }
+
+    public static void ajustarContador(int proximoId) {
+        if (proximoId > contadorId) {
+            contadorId = proximoId;
+        }
+    }
 }
