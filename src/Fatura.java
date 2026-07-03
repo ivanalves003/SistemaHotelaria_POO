@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.time.format.DateTimeFormatter;
 
 public class Fatura implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -29,6 +30,9 @@ public class Fatura implements Serializable {
         sb.append("Cliente Titular: ").append(reserva.getCliente().getNome()).append("\n");
         sb.append("Quarto: ").append(reserva.getQuarto().getNumero()).append("\n");
         sb.append("Diárias: ").append(reserva.getQuantidadeDiarias()).append("x de R$ ").append(reserva.getQuarto().getValorDiaria()).append("\n");
+        if (reserva.getDataHoraCheckIn() != null) {
+            sb.append("Check-in realizado em: ").append(reserva.getDataHoraCheckIn().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
+        }
         sb.append("------------------------------------\n");
         sb.append("Total de Hospedagem: R$ ").append(valorHospedagem).append("\n");
         sb.append("Total de Consumos Extras: R$ ").append(totalConsumo).append("\n");

@@ -9,4 +9,5 @@ public class DadosHotel implements Serializable {
     public List<Quarto> quartos = new ArrayList<>();
     public List<Reserva> reservas = new ArrayList<>();
     public List<Produto> catalogo = new ArrayList<>();
+    public List<TipoQuarto> tiposQuarto = new ArrayList<>();
 }

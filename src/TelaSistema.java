@@ -1,5 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class TelaSistema {
@@ -83,15 +87,16 @@ public class TelaSistema {
             String menu = "    PAINEL OPERACIONAL    \n"
                     + "1. Cadastrar Cliente Titular\n"
                     + "2. Adicionar Dependente\n"
-                    + "3. Alterar E-mail do Cliente\n"
+                    + "3. Alterar Dados do Cliente\n"
                     + "4. Excluir Cliente\n"
-                    + "5. Cadastrar Quarto\n"
-                    + "6. Cadastrar Produto no Catálogo\n"
-                    + "7. Fazer Reserva\n"
-                    + "8. Fazer Check-in\n"
-                    + "9. Lançar Consumo\n"
-                    + "10. Fazer Check-out / Gerar Fatura\n"
-                    + "11. Relatórios do Sistema\n"
+                    + "5. Cadastrar Categoria de Acomodação\n"
+                    + "6. Cadastrar Quarto\n"
+                    + "7. Cadastrar Produto no Catálogo\n"
+                    + "8. Fazer Reserva\n"
+                    + "9. Fazer Check-in\n"
+                    + "10. Lançar Consumo\n"
+                    + "11. Fazer Check-out / Gerar Fatura\n"
+                    + "12. Relatórios do Sistema\n"
                     + "0. Voltar\n\n"
                     + "Escolha uma opção:";
 
@@ -114,13 +119,14 @@ public class TelaSistema {
             case 2: adicionarDependente(); break;
             case 3: alterarCliente(); break;
             case 4: excluirCliente(); break;
-            case 5: cadastrarQuarto(); break;
-            case 6: cadastrarProduto(); break;
-            case 7: fazerReserva(); break;
-            case 8: fazerCheckIn(); break;
-            case 9: lancarConsumo(); break;
-            case 10: fazerCheckOut(); break;
-            case 11: relatorios(); break;
+            case 5: cadastrarTipoQuarto(); break;
+            case 6: cadastrarQuarto(); break;
+            case 7: cadastrarProduto(); break;
+            case 8: fazerReserva(); break;
+            case 9: fazerCheckIn(); break;
+            case 10: lancarConsumo(); break;
+            case 11: fazerCheckOut(); break;
+            case 12: relatorios(); break;
             default: JOptionPane.showMessageDialog(janela, "Opção inválida.", "Aviso", JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -176,11 +182,19 @@ public class TelaSistema {
             Cliente cliente = bd.clientes.stream().filter(c -> c.getId() == id).findFirst().orElse(null);
             if (cliente == null) throw new HotelException("Cliente não encontrado.");
 
+            String novoNome = JOptionPane.showInputDialog(janela, "Novo Nome (atual: " + cliente.getNome() + "):");
+            if (novoNome != null && !novoNome.isEmpty()) cliente.setNome(novoNome);
+
+            String novoTelefone = JOptionPane.showInputDialog(janela, "Novo Telefone (atual: " + cliente.getTelefone() + "):");
+            if (novoTelefone != null && !novoTelefone.isEmpty()) cliente.setTelefone(novoTelefone);
+
             String novoEmail = JOptionPane.showInputDialog(janela, "Novo E-mail (atual: " + cliente.getEmail() + "):");
-            if (novoEmail != null && !novoEmail.isEmpty()) {
-                cliente.setEmail(novoEmail);
-                JOptionPane.showMessageDialog(janela, "Dados alterados com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            }
+            if (novoEmail != null && !novoEmail.isEmpty()) cliente.setEmail(novoEmail);
+
+            String novoCpf = JOptionPane.showInputDialog(janela, "Novo CPF (atual: " + cliente.getDocumento() + "):");
+            if (novoCpf != null && !novoCpf.isEmpty()) cliente.setDocumento(novoCpf);
+
+            JOptionPane.showMessageDialog(janela, "Dados alterados com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (HotelException e) {
             JOptionPane.showMessageDialog(janela, e.getMessage(), "Aviso", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
@@ -208,17 +222,49 @@ public class TelaSistema {
         }
     }
 
+    private void cadastrarTipoQuarto() {
+        try {
+            String nome = JOptionPane.showInputDialog(janela, "Nome da Categoria (Ex: Casal Standard):");
+            if (nome == null || nome.isEmpty()) return;
+
+            boolean jaExiste = bd.tiposQuarto.stream().anyMatch(t -> t.getNome().equalsIgnoreCase(nome));
+            if (jaExiste) throw new HotelException("Já existe uma categoria com o nome '" + nome + "'.");
+
+            int capacidade = Integer.parseInt(JOptionPane.showInputDialog(janela, "Capacidade Máxima de Pessoas:"));
+            bd.tiposQuarto.add(new TipoQuarto(nome, capacidade));
+            JOptionPane.showMessageDialog(janela, "Categoria '" + nome + "' cadastrada com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        } catch (HotelException e) {
+            JOptionPane.showMessageDialog(janela, e.getMessage(), "Aviso", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(janela, "Dados inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void cadastrarQuarto() {
         try {
             int num = Integer.parseInt(JOptionPane.showInputDialog(janela, "Número do Quarto:"));
-            String tipoNome = JOptionPane.showInputDialog(janela, "Tipo (Ex: Casal):");
-            int capacidade = Integer.parseInt(JOptionPane.showInputDialog(janela, "Capacidade Máxima de Pessoas:"));
+
+            boolean jaExiste = bd.quartos.stream().anyMatch(q -> q.getNumero() == num);
+            if (jaExiste) throw new HotelException("Já existe um quarto cadastrado com o número " + num + ".");
+
+            String tipoNome = JOptionPane.showInputDialog(janela, "Categoria (Ex: Casal Standard):");
+            TipoQuarto tipo = bd.tiposQuarto.stream().filter(t -> t.getNome().equalsIgnoreCase(tipoNome)).findFirst().orElse(null);
+            if (tipo == null) {
+                int capacidade = Integer.parseInt(JOptionPane.showInputDialog(janela, "Categoria nova. Capacidade Máxima de Pessoas:"));
+                tipo = new TipoQuarto(tipoNome, capacidade);
+                bd.tiposQuarto.add(tipo);
+            }
+
             double valor = Double.parseDouble(JOptionPane.showInputDialog(janela, "Valor da Diária:"));
 
-            TipoQuarto tipo = new TipoQuarto(tipoNome, capacidade);
             Quarto q = new Quarto(num, tipo, valor);
+            for (Produto p : bd.catalogo) {
+                q.getMiniBar().adicionarProdutoAoMiniBar(p);
+            }
             bd.quartos.add(q);
             JOptionPane.showMessageDialog(janela, "Quarto " + num + " cadastrado com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        } catch (HotelException e) {
+            JOptionPane.showMessageDialog(janela, e.getMessage(), "Aviso", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(janela, "Dados inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
@@ -257,11 +303,27 @@ public class TelaSistema {
                 throw new HotelException("Capacidade excedida. Hóspedes: " + totalOcupantes + " | Capacidade do Quarto: " + quarto.getTipo().getCapacidadeMaxima());
             }
 
-            String entrada = JOptionPane.showInputDialog(janela, "Data Entrada (DD/MM/AAAA):");
-            String saida = JOptionPane.showInputDialog(janela, "Data Saída (DD/MM/AAAA):");
-            int diarias = Integer.parseInt(JOptionPane.showInputDialog(janela, "Quantidade de Diárias previstas:"));
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate dataCheckIn;
+            LocalDate dataCheckOut;
+            try {
+                dataCheckIn = LocalDate.parse(JOptionPane.showInputDialog(janela, "Data Entrada (DD/MM/AAAA):"), formato);
+                dataCheckOut = LocalDate.parse(JOptionPane.showInputDialog(janela, "Data Saída (DD/MM/AAAA):"), formato);
+            } catch (DateTimeParseException e) {
+                throw new HotelException("Data inválida. Use o formato DD/MM/AAAA.");
+            }
+            if (!dataCheckOut.isAfter(dataCheckIn)) {
+                throw new HotelException("A data de saída deve ser posterior à data de entrada.");
+            }
 
-            Reserva r = new Reserva(cliente, quarto, entrada, saida, diarias);
+            for (Reserva existente : bd.reservas) {
+                if (existente.getQuarto().getNumero() == numQuarto
+                        && Reserva.seSobrepoe(dataCheckIn, dataCheckOut, existente.getDataCheckIn(), existente.getDataCheckOut())) {
+                    throw new HotelException("Já existe uma reserva para este quarto que se sobrepõe a este período.");
+                }
+            }
+
+            Reserva r = new Reserva(cliente, quarto, dataCheckIn, dataCheckOut);
             quarto.setStatus("Reservado");
             bd.reservas.add(r);
 
@@ -281,6 +343,9 @@ public class TelaSistema {
             if (quarto == null) throw new HotelException("Quarto não encontrado.");
             if (!quarto.getStatus().equals("Reservado")) throw new HotelException("Apenas quartos 'Reservados' podem fazer Check-in.");
 
+            Reserva reserva = bd.reservas.stream().filter(r -> r.getQuarto().getNumero() == numQuarto).reduce((first, second) -> second).orElse(null);
+            if (reserva != null) reserva.setDataHoraCheckIn(LocalDateTime.now());
+
             quarto.setStatus("Ocupado");
             JOptionPane.showMessageDialog(janela, "Check-in realizado! Quarto " + numQuarto + " está agora Ocupado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         } catch (HotelException e) {
@@ -296,14 +361,15 @@ public class TelaSistema {
             if (quarto == null) throw new HotelException("Quarto não encontrado.");
             if (!quarto.getStatus().equals("Ocupado")) throw new HotelException("Só é possível lançar consumo em quartos ocupados.");
 
-            if (bd.catalogo.isEmpty()) throw new HotelException("O catálogo de produtos está vazio.");
+            List<Produto> disponiveis = quarto.getMiniBar().getProdutosDisponiveis();
+            if (disponiveis.isEmpty()) throw new HotelException("O minibar deste quarto não possui produtos disponíveis.");
 
             StringBuilder listaProd = new StringBuilder("ID - Produto (Preço - Estoque)\n");
-            for (Produto p : bd.catalogo) { listaProd.append(p.getId()).append(" - ").append(p.getNome()).append(" (R$ ").append(p.getPrecoUnitario()).append(" - Qtd: ").append(p.getQuantidadeEstoque()).append(")\n"); }
+            for (Produto p : disponiveis) { listaProd.append(p.getId()).append(" - ").append(p.getNome()).append(" (R$ ").append(p.getPrecoUnitario()).append(" - Qtd: ").append(p.getQuantidadeEstoque()).append(")\n"); }
 
             int idProd = Integer.parseInt(JOptionPane.showInputDialog(janela, listaProd.toString() + "\nDigite o ID do produto consumido:"));
-            Produto produto = bd.catalogo.stream().filter(p -> p.getId() == idProd).findFirst().orElse(null);
-            if (produto == null) throw new HotelException("Produto não encontrado.");
+            Produto produto = disponiveis.stream().filter(p -> p.getId() == idProd).findFirst().orElse(null);
+            if (produto == null) throw new HotelException("Produto não encontrado no minibar deste quarto.");
 
             int qtd = Integer.parseInt(JOptionPane.showInputDialog(janela, "Quantidade consumida:"));
             quarto.getMiniBar().registrarConsumo(produto, qtd);

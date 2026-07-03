@@ -25,6 +25,6 @@ public class Cliente extends Pessoa implements Serializable {
 
     @Override
     public String toString() {
-        return "ID: " + id + " | Nome: " + nome + " | CPF: " + documento + " | Dependentes: " + dependentes.size();
+        return "ID: " + id + " | Nome: " + nome + " | CPF: " + documento + " | Email: " + email + " | Dependentes: " + dependentes.size();
     }
 }
